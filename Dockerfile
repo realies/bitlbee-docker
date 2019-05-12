@@ -1,15 +1,13 @@
 FROM alpine:edge as builder
-
 ENV BITLBEE_COMMIT fe122f3
 ENV DISCORD_COMMIT aa0bbf2
+ENV INSTAGRAM_COMMIT 6add7c2
 ENV FACEBOOK_COMMIT c76b36b
 ENV SKYPE_COMMIT 14f1b69
 ENV SLACK_COMMIT c10cc72
 ENV STEAM_COMMIT a6444d2
 ENV TELEGRAM_COMMIT 9ba0e57
-
 ENV STRIP true
-
 RUN set -x \
 	&& apk update \
 	&& apk upgrade \
@@ -17,6 +15,7 @@ RUN set -x \
 	autoconf \
 	gnutls-dev \
 	pidgin-dev \
+	python \
 	libgcrypt-dev \
 	libwebp-dev \
 	automake \
@@ -37,7 +36,6 @@ RUN cd /root \
 	&& make install-dev \
 	&& make install-etc \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/local/sbin/bitlbee; fi
-
 FROM builder as discord-builder
 RUN cd /root \
 	&& git clone -n https://github.com/sm00th/bitlbee-discord \
@@ -48,7 +46,14 @@ RUN cd /root \
 	&& make \
 	&& make install \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/local/lib/bitlbee/discord.so; fi
-
+FROM builder as instagram-builder
+RUN cd /root \
+	&& git clone -n https://github.com/EionRobb/purple-instagram \
+        && cd purple-instagram \
+        && git checkout ${INSTAGRAM_COMMIT} \
+        && make \
+        && make install \
+        && if [ "$STRIP" == "true" ]; then strip /usr/lib/purple-2/libinstagram.so; fi
 FROM builder as facebook-builder
 RUN cd /root \
 	&& git clone -n https://github.com/jgeboski/bitlbee-facebook \
@@ -58,8 +63,6 @@ RUN cd /root \
 	&& make \
 	&& make install \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/local/lib/bitlbee/facebook.so; fi
-
-
 FROM builder as skype-builder
 RUN cd /root \
 	&& git clone -n https://github.com/EionRobb/skype4pidgin \
@@ -69,7 +72,6 @@ RUN cd /root \
 	&& make \
 	&& make install \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/lib/purple-2/libskypeweb.so; fi
-
 FROM builder as slack-builder
 RUN cd /root \
 	&& git clone -n https://github.com/dylex/slack-libpurple \
@@ -81,7 +83,6 @@ RUN cd /root \
 	&& mkdir -p /usr/share/pixmaps/pidgin/protocols/48/ \
 	&& make install \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/lib/purple-2/libslack.so; fi
-
 FROM builder as steam-builder
 RUN cd /root \
 	&& git clone -n https://github.com/bitlbee/bitlbee-steam \
@@ -91,7 +92,6 @@ RUN cd /root \
 	&& make \
 	&& make install \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/local/lib/bitlbee/steam.so; fi
-
 FROM builder as telegram-builder
 RUN cd /root \
 	&& git clone -n https://github.com/majn/telegram-purple \
@@ -102,9 +102,7 @@ RUN cd /root \
 	&& make \
 	&& make install \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/lib/purple-2/telegram-purple.so; fi
-
 FROM alpine:edge
-
 RUN apk update
 RUN apk upgrade
 RUN apk add glib \
@@ -123,35 +121,18 @@ RUN apk add glib \
 	&& chown -R bitlbee:bitlbee /bitlbee-data \
 	&& touch /var/run/bitlbee.pid \
 	&& chown bitlbee:bitlbee /var/run/bitlbee.pid
-
 COPY --from=builder /usr/local/etc/bitlbee/ /usr/local/etc/bitlbee/
 COPY --from=builder /usr/local/include/bitlbee/ /usr/local/include/bitlbee/
 COPY --from=builder /usr/local/lib/pkgconfig/bitlbee.pc /usr/local/lib/pkgconfig/bitlbee.pc
 COPY --from=builder /usr/local/sbin/bitlbee /usr/local/sbin/bitlbee
 COPY --from=builder /usr/local/share/bitlbee/help.txt /usr/local/share/bitlbee/help.txt
-
 COPY --from=discord-builder /usr/local/lib/bitlbee/discord.* /usr/local/lib/bitlbee/
-COPY --from=discord-builder /usr/local/share/bitlbee/discord-help.txt /usr/local/share/bitlbee/discord-help.txt
-
+COPY --from=instagram-builder /usr/lib/purple-2/libinstagram.so /usr/lib/purple-2/
 COPY --from=facebook-builder /usr/local/lib/bitlbee/facebook.* /usr/local/lib/bitlbee/
-
-COPY --from=skype-builder /usr/lib/purple-2/libskypeweb.so /usr/lib/purple-2/libskypeweb.so
-COPY --from=skype-builder /usr/share/pixmaps/pidgin/emotes/skype/theme /usr/share/pixmaps/pidgin/emotes/skype/theme
-# don't copy pixmaps. these are not needed for bitlbee
-# COPY --from=skype-builder /usr/share/pixmaps/pidgin/protocols/16/skype* /usr/share/pixmaps/pidgin/protocols/16/
-# COPY --from=skype-builder /usr/share/pixmaps/pidgin/protocols/22/skype* /usr/share/pixmaps/pidgin/protocols/22/
-# COPY --from=skype-builder /usr/share/pixmaps/pidgin/protocols/48/skype* /usr/share/pixmaps/pidgin/protocols/48/
-
-COPY --from=slack-builder /usr/lib/purple-2/libslack.so /usr/lib/purple-2/libslack.so
-# COPY --from=slack-builder /usr/share/pixmaps/pidgin/protocols/16/slack.png /usr/share/pixmaps/pidgin/protocols/16/slack.png
-# COPY --from=slack-builder /usr/share/pixmaps/pidgin/protocols/22/slack.png /usr/share/pixmaps/pidgin/protocols/22/slack.png
-# COPY --from=slack-builder /usr/share/pixmaps/pidgin/protocols/48/slack.png /usr/share/pixmaps/pidgin/protocols/48/slack.png
-
+COPY --from=skype-builder /usr/lib/purple-2/libskypeweb.so /usr/lib/purple-2/
+COPY --from=slack-builder /usr/lib/purple-2/libslack.so /usr/lib/purple-2/
 COPY --from=steam-builder /usr/local/lib/bitlbee/steam.* /usr/local/lib/bitlbee/
-
-COPY --from=telegram-builder /etc/telegram-purple/server.tglpub /etc/telegram-purple/server.tglpub
-COPY --from=telegram-builder /usr/lib/purple-2/telegram-purple.so /usr/lib/purple-2/telegram-purple.so
-
+COPY --from=telegram-builder /usr/lib/purple-2/telegram-purple.so /usr/lib/purple-2/
 USER bitlbee
 VOLUME /bitlbee-data
 ENTRYPOINT ["/usr/local/sbin/bitlbee", "-F", "-n", "-d", "/bitlbee-data"]
