@@ -1,9 +1,7 @@
 bitlbee:
-  image: 'vanityshed/bitlbee-alpine-plugins:latest'
-  restart: always
-
+  image: realies/bitlbee
+  restart: unless-stopped
   ports:
-    - '6667:6667'
+    - 6667:6667
   volumes:
-    - '/opt/dockerdata/bitlbee:/bitlbee-data'
-    - '/etc/localtime:/etc/localtime:ro'
+    - /persistent/appdata:/bitlbee-data

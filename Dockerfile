@@ -1,13 +1,12 @@
-FROM alpine:latest as builder
-LABEL maintainer=stevesbrain,realies
+FROM alpine:edge as builder
 
-ENV BITLBEE_COMMIT 921ea8b
-ENV DISCORD_COMMIT fd8213f
-ENV FACEBOOK_COMMIT 553593d
-ENV SKYPE_COMMIT 2290013
-ENV SLACK_COMMIT 6ce21a1
+ENV BITLBEE_COMMIT fe122f3
+ENV DISCORD_COMMIT aa0bbf2
+ENV FACEBOOK_COMMIT c76b36b
+ENV SKYPE_COMMIT 14f1b69
+ENV SLACK_COMMIT c10cc72
 ENV STEAM_COMMIT a6444d2
-ENV TELEGRAM_COMMIT f686f8a
+ENV TELEGRAM_COMMIT 9ba0e57
 
 ENV STRIP true
 
@@ -104,8 +103,7 @@ RUN cd /root \
 	&& make install \
 	&& if [ "$STRIP" == "true" ]; then strip /usr/lib/purple-2/telegram-purple.so; fi
 
-FROM alpine:latest
-LABEL maintainer=stevesbrain,realies
+FROM alpine:edge
 
 RUN apk update
 RUN apk upgrade
