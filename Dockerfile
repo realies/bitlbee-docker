@@ -15,7 +15,8 @@ RUN set -x \
 	autoconf \
 	gnutls-dev \
 	pidgin-dev \
-	python3 \
+	python2 \
+	python2-dev \
 	libgcrypt-dev \
 	libwebp-dev \
 	automake \
