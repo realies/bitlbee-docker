@@ -1,12 +1,12 @@
 FROM alpine:edge as builder
-ENV BITLBEE_COMMIT fe122f3
-ENV DISCORD_COMMIT aa0bbf2
-ENV INSTAGRAM_COMMIT 6add7c2
+ENV BITLBEE_COMMIT e979b0f
+ENV DISCORD_COMMIT 9466079
+ENV INSTAGRAM_COMMIT 420cef4
 ENV FACEBOOK_COMMIT c76b36b
-ENV SKYPE_COMMIT 14f1b69
-ENV SLACK_COMMIT c10cc72
+ENV SKYPE_COMMIT cf65095
+ENV SLACK_COMMIT 7f61c84
 ENV STEAM_COMMIT a6444d2
-ENV TELEGRAM_COMMIT 9ba0e57
+ENV TELEGRAM_COMMIT ca42dcf
 ENV STRIP true
 RUN set -x \
 	&& apk update \
@@ -15,7 +15,8 @@ RUN set -x \
 	autoconf \
 	gnutls-dev \
 	pidgin-dev \
-	python \
+	python2 \
+	python2-dev \
 	libgcrypt-dev \
 	libwebp-dev \
 	automake \
