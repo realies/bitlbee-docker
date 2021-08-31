@@ -7,6 +7,7 @@ ENV SKYPE_COMMIT cf65095
 ENV SLACK_COMMIT 7f61c84
 ENV STEAM_COMMIT a6444d2
 ENV TELEGRAM_COMMIT ca42dcf
+ENV PYTHON python3
 ENV STRIP true
 RUN set -x \
 	&& apk update \
@@ -15,8 +16,6 @@ RUN set -x \
 	autoconf \
 	gnutls-dev \
 	pidgin-dev \
-	python2 \
-	python2-dev \
 	libgcrypt-dev \
 	libwebp-dev \
 	automake \
