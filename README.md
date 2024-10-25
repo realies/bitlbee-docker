@@ -10,7 +10,6 @@ Minimal build of latest BitlBee on latest Alpine with latest plugins
 | [bitlbee-facebook](https://github.com/jgeboski/bitlbee-facebook) | facebook | 1.2.0 | [c76b36b](https://github.com/bitlbee/bitlbee-facebook/commit/c76b36bd29ee8b32fd038c7b7254931c71ecce1b) |
 | [libpurple](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libpurple) | gg, irc, novell, simple, zephyr | 2.13.0-r2 | [38d8a7c](http://git.alpinelinux.org/cgit/aports/commit/?id=38d8a7c2ca995bf1fc1c310303941fcad35ae429) |
 | [libpurple-bonjour](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libpurple-bonjour) | bonjour | 2.13.0-r2 | [38d8a7c](http://git.alpinelinux.org/cgit/aports/commit/?id=38d8a7c2ca995bf1fc1c310303941fcad35ae429) |
-| [libpurple-oscar](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libpurple-oscar) | aim, icq, oscar | 2.13.0-r2 | [38d8a7c](http://git.alpinelinux.org/cgit/aports/commit/?id=38d8a7c2ca995bf1fc1c310303941fcad35ae429) |
 | [libpurple-xmpp](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libpurple-xmpp) | jabber, xmpp | 2.13.0-r2 | [38d8a7c](http://git.alpinelinux.org/cgit/aports/commit/?id=38d8a7c2ca995bf1fc1c310303941fcad35ae429) |
 | [purple-instagram](https://github.com/EionRobb/purple-instagram) | instagram | git-HEAD | [420cef4](https://github.com/EionRobb/purple-instagram/commit/420cef45db2398739ac19c93640e6fff42865bb1) |
 | [skype4pidgin](https://github.com/EionRobb/skype4pidgin) | skype | 1.5 | [cf65095](https://github.com/EionRobb/skype4pidgin/commit/cf650950f937cf4faf834063128693a6c6a30a00) |
