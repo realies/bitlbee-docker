@@ -1,0 +1,111 @@
+name: Update Bitlbee Dependencies
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at 00:00 UTC
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check dependencies for updates
+        id: check_deps
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deps = {
+              'BITLBEE': { owner: 'bitlbee', repo: 'bitlbee' },
+              'DISCORD': { owner: 'sm00th', repo: 'bitlbee-discord' },
+              'INSTAGRAM': { owner: 'EionRobb', repo: 'purple-instagram' },
+              'FACEBOOK': { owner: 'jgeboski', repo: 'bitlbee-facebook' },
+              'SKYPE': { owner: 'EionRobb', repo: 'skype4pidgin' },
+              'SLACK': { owner: 'dylex', repo: 'slack-libpurple' },
+              'STEAM': { owner: 'bitlbee', repo: 'bitlbee-steam' },
+              'TELEGRAM': { owner: 'majn', repo: 'telegram-purple' }
+            };
+            
+            const fs = require('fs');
+            const dockerfile = fs.readFileSync('Dockerfile', 'utf8');
+            let updates = {};
+            let hasUpdates = false;
+            
+            for (const [key, repo] of Object.entries(deps)) {
+              const result = await github.rest.repos.getBranch({
+                owner: repo.owner,
+                repo: repo.repo,
+                branch: 'master'
+              });
+              
+              const latestCommit = result.data.commit.sha.substring(0, 7);
+              const currentCommit = dockerfile.match(new RegExp(`ENV ${key}_COMMIT ([a-f0-9]+)`))[1];
+              
+              if (currentCommit !== latestCommit) {
+                updates[key] = {
+                  current: currentCommit,
+                  latest: latestCommit,
+                  owner: repo.owner,
+                  repo: repo.repo
+                };
+                hasUpdates = true;
+              }
+            }
+            
+            core.setOutput('has_updates', hasUpdates);
+            core.setOutput('updates', JSON.stringify(updates));
+
+      - name: Update Dockerfile and README
+        if: steps.check_deps.outputs.has_updates == 'true'
+        run: |
+          UPDATES='${{ steps.check_deps.outputs.updates }}'
+          
+          # Update Dockerfile
+          for key in $(echo $UPDATES | jq -r 'keys[]'); do
+            current=$(echo $UPDATES | jq -r ".[\"$key\"].current")
+            latest=$(echo $UPDATES | jq -r ".[\"$key\"].latest")
+            sed -i "s/ENV ${key}_COMMIT ${current}/ENV ${key}_COMMIT ${latest}/" Dockerfile
+            
+            # Update README
+            owner=$(echo $UPDATES | jq -r ".[\"$key\"].owner")
+            repo=$(echo $UPDATES | jq -r ".[\"$key\"].repo")
+            full_sha=$(echo $UPDATES | jq -r ".[\"$key\"].latest")
+            sed -i "s|\[$current\](https://github.com/$owner/$repo/commit/[a-f0-9]\+)|\[$latest\](https://github.com/$owner/$repo/commit/$full_sha)|" README.md
+          done
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        if: steps.check_deps.outputs.has_updates == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: realies/bitlbee:latest
+          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x
+          cache-from: type=registry,ref=realies/bitlbee:cache
+          cache-to: type=inline,mode=max,ref=realies/bitlbee:cache
+
+      - name: Commit changes if needed
+        if: steps.check_deps.outputs.has_updates == 'true'
+        run: |
+          git config user.email "${{ secrets.USER_EMAIL }}"
+          git config user.name "${{ secrets.USER_NAME }}"
+          git add Dockerfile README.md
+          git commit -m "update dependencies to latest commits"
+          git push

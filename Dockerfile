@@ -111,7 +111,6 @@ RUN apk add glib \
 	libgcrypt \
 	libpurple \
 	libpurple-bonjour \
-	libpurple-oscar \
 	libpurple-xmpp \
 	libwebp \
 	pidgin \
